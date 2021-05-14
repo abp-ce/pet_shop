@@ -1,0 +1,73 @@
+html { background-image: url(background.jpg); background-position: center; background-size: cover; }
+body { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; grid-template-rows: auto auto 1fr auto;
+    grid-template-areas: "h h h h" "n n n n" "as ar ar ar" "f f f f"; min-height: 100vh; max-width: 90vw; 
+    margin: 0 auto; min-width: 1000px;}
+header { grid-area: h; text-align: center; background-color: rgba( 169, 169, 169, .35); }
+nav { grid-area: n; text-align: center; }
+aside { grid-area: as; text-align: left; background-color: rgba( 169, 169, 169, .35); overflow-y: auto;}
+article { grid-area: ar; }
+footer { grid-area: f; font-size: x-small; text-align: right; background-color: rgba( 211, 211, 211, .35) }
+
+.gallery { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 45%; 
+           gap: 5px; overflow-y: auto; width: 100%; height: 100%;}
+.gallery div { text-align: center; border: 3px inset black; background-color: rgba( 211, 211, 211, .35)}
+.card { display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; gap: 5px; width: 100%; height: 100%;}
+.card div { text-align: center; border: 3px inset black; background-color: rgba( 211, 211, 211, .35)}
+li { cursor: pointer;}
+li span:hover { font-style: italic; }
+.active-node { font-weight: bold; }
+.non-active-node { font-weight: initial;}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.9s ease;
+  overflow: hidden;
+  visibility: visible;
+  position: absolute;
+  width: 100%;
+  opacity: 1;
+}
+
+.fade-enter,
+.fade-leave-to {
+  visibility: hidden;
+  width: 100%;
+  opacity: 0;
+}
+
+img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+img:hover{
+  transform: scale(1.5);
+}
+
+.prev, .next {
+  cursor: pointer;
+  position: absolute;
+  top: 40%;
+  width: auto;
+  padding: 16px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: 0.9s ease;
+  border-radius: 0 4px 4px 0;
+  text-decoration: none;
+  user-select: none;
+}
+
+.next {
+  right: 0;
+}
+
+.prev {
+  left: 0;
+}
+
+.prev:hover, .next:hover {
+  background-color: rgba(0,0,0,0.9);
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<title>{% block title %}{% endblock %} - Pet Shop</title>
+<meta name="author" content="Andrei Polyakov">
+<meta name="viewport" content="width=device-width, initial-scale=1 ">
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<html lang="ru">
+<body>
+
+  <header>{% block header %}Pet Shop{% endblock %}</header>
+
+  <nav>{% block nav %}Main Page{% endblock %}</nav>
+  <aside>{% block aside %}Aside Block{% endblock %}</aside>
+  <article>
+    {% block article %}{% endblock %}
+  </article>
+  <footer>
+    {% block footer %}
+      <p>&copy Andrei Polyakov 2021</p>
+      <p style="margin-top: -8px;"><a href="mailto:ap120368+web@gmail.com">ap120368+web@gmail.com</a></p>
+    {% endblock %}
+  </footer>
+ 
+</body>
+</html>
