@@ -7,19 +7,23 @@
 <html lang="ru">
 <body>
 
-  <header>{% block header %}Pet Shop{% endblock %}</header>
+  <header>{% block header %}<h1>Pet Shop</h1>{% endblock %}</header>
 
-  <nav>{% block nav %}Main Page{% endblock %}</nav>
+  <nav>{% block nav %}{% endblock %}</nav>
   <aside>{% block aside %}Aside Block{% endblock %}</aside>
   <article>
     {% block article %}{% endblock %}
   </article>
   <footer>
     {% block footer %}
-      <p>&copy Andrei Polyakov 2021</p>
-      <p style="margin-top: -8px;"><a href="mailto:ap120368+web@gmail.com">ap120368+web@gmail.com</a></p>
     {% endblock %}
-  </footer>
+    <div class="copyright">
+      <div>
+        <p>&copy Andrei Polyakov 2021</p>
+        <p style="margin-top: -8px;"><a href="mailto:ap120368+web@gmail.com">ap120368+web@gmail.com</a></p>
+      </div>
+    </div>
+</footer>
  
 </body>
 </html>

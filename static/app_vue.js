@@ -109,26 +109,42 @@ Vue.component('abp-item', {
 })
 
 Vue.component('abp-gallery', {
-    props: {
-        data: Array
-    },
+    props: ['data'],
     template: '#abp-gallery',
     delimiters: ['${', '}']
 })
 
 Vue.component('abp-card', {
-    props: {
-        data: Array
-    },
+    props: ['data'],
     template: '#abp-card',
-    delimiters: ['${', '}']
+    delimiters: ['${', '}'],
+    asyncComputed: {
+        details: {
+            async get() {
+                console.log("dsanfal");
+                jsn = JSON.stringify({ "id": this.data.id });
+                const response = await fetch('/details', {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json;charset=utf-8'
+                    },
+                    body: jsn
+                })
+                const rsp = await response.json();
+                if (rsp) return ({ nick: rsp['nick'], birthday: rsp['birthday'], 
+                                breed: rsp['breed'], subbreed: rsp['subbreed'], mam: rsp['mam'], dad: rsp['dad']});
+                else return { nick: 'nick', birthday: 'birthday', breed: 'breed', subbreed: 'subbreed', mam: 'mam', dad: 'dad' };
+            },
+            default() { return { nick: 'nick', birthday: 'birthday', breed: 'breed', subbreed: 'subbreed', mam: 'mam', dad: 'dad'}; }
+        }
+    }
 })
 
 new Vue({
     el: '#switch',
     data: { 
         swtch: 'abp-gallery',
-        data: []
+        data: {}
     },
     created: function() {
         eventBus.$on('tree-event',this.tree_handler);
@@ -140,11 +156,11 @@ new Vue({
         tree_handler: function(node) {
             if (node.id <= 0) {
                 if (this.swtch == 'abp-card') this.swtch = 'abp-gallery';
-                this.data = node.children;
+                this.data = node;
             } 
             else {
                 if (this.swtch == 'abp-gallery') this.swtch = 'abp-card';
-                this.data = [node];
+                this.data = node;
             }
         }
     }

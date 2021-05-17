@@ -34,24 +34,50 @@
     </template>
     <template id='abp-gallery'>
         <div class="gallery">
-            <abp-item v-for="dt in data" :key="dt.label" :item="dt"></abp-item>
-            <!--div><img src="static/photo.jpg"></div-->
+            <abp-item v-for="dt in data.children" :key="dt.label" :item="dt"></abp-item>
         </div>
     </template>
     <template id="abp-card">
         <div class="card">
-            <div>${ data[0].label }</div>
-            <div>${ data[0].label }</div>
+            <!--abp-slider :photos="photos"></abp-slider-->
+            <div>${ data.label }</div>
+            <div class="desc">
+                <div>
+                    Имя: <b>${ data.label }</b><br>
+                    Кличка: <b>${ details.nick }</b><br>
+                    День рождения: <b>${ details.birthday }</b><br>
+                </div>
+                <div>
+                    Порода: <b>${ details.breed }</b><br>
+                    Уточнение породы: <b>${ details.subbreed }</b><br>
+                </div>
+                <div>
+                    Мать: <b>${ details.mam }</b><br>
+                    Отец: <b>${ details.dad }</b><br>
+                </div>
+            </div>
         </div>
     </template>
     <template id="abp-item">
-        <div @click="onClick()">${item.label}</div>
+        <div @click="onClick()">
+            <figure>
+                <img src="static/photo.jpg">
+                <figcaption>${item.label}</figcaption>
+            </figure>
+        </div>
     </template>
 
     <div id="switch" style="width: 100%; height: 100%;">
         <component :is="swtch" :data="data"></component>
     </div>
-    <!--abp-slider id="vue" :photos='photos'></abp-slider-->
-    
+
+    <script src="https://unpkg.com/vue-async-computed"></script>
     <script src="{{ url_for('static', filename='app_vue.js') }}"></script>
 {% endblock %}
+{% block footer%}
+<div class="contacts">
+    По вопросам бронирования и приобретения щенков обращаться к <b>Людмиле Васильевне</b>:<br>
+     - тел. +79279316596,<br>
+     - Whatsapp +79279316596
+</div>
+{% endblock%}

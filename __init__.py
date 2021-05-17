@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from app.db import get_db
 
 def create_app(test_config=None):
@@ -20,8 +20,31 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
 
+    @app.route('/details', methods=['POST'])
+    def details():
+        data = request.get_json()
+        db = get_db()
+        details = db.execute("SELECT * FROM dogs WHERE id = ?", (data["id"],)).fetchone()
+        jsn = {}
+        jsn['nick'] = details['nick']
+        jsn['birthday'] = details['birthday'].strftime("%d-%m-%Y")
+        jsn['breed'] = jsn['subbreed'] = jsn['mam'] = jsn['dad'] = ''
+        if (details['breed']):
+            breed = db.execute("SELECT breed FROM breeds WHERE id =?", (details['breed'],)).fetchone()
+            jsn['breed'] = breed['breed']
+        if (details['subbreed']):
+            subbreed = db.execute("SELECT subbreed FROM subbreeds WHERE id =?", (details['subbreed'],)).fetchone()
+            jsn['subbreed'] = subbreed['subbreed']
+        if (details['mam']):
+            mam = db.execute("SELECT dogname FROM dogs WHERE id =?", (details['mam'],)).fetchone()
+            jsn['mam'] = mam['dogname']
+        if (details['dad']):
+            dad = db.execute("SELECT dogname FROM dogs WHERE id =?", (details['dad'],)).fetchone()
+            jsn['dad'] = dad['dogname']
+        return json.dumps(jsn)
+
+
     @app.route('/')
-    
     def pet_shop():
         #class Node:
             #def __init__(self, label) :
