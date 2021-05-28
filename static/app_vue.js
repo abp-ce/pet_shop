@@ -4,7 +4,7 @@ Vue.component('abp-tree', {
     data: function() {
         return {
             flag: false,
-            sel_node: null
+            sel_node: {}
         }
     },
     props: ['tree'],
@@ -13,20 +13,33 @@ Vue.component('abp-tree', {
     created: function() {
         eventBus.$on('disactivate',this.disactivate);
         eventBus.$on('selected',this.selected);
+        eventBus.$on('logged',this.logged);
+        eventBus.$on('unlogged',this.logged);
     },
     beforeDestroy: function() {
         eventBus.$off('disactivate');
         eventBus.$off('selected');
+        eventBus.$off('logged');
+        eventBus.$off('unlogged');
+    },
+    mounted: function() {
+        eventBus.$emit("tree-event",this.tree);
     },
     methods: {
         disactivate: function() {
             if (this.flag == false) this.flag = true;
             else this.flag = false;
+            console.log(this.flag);
         },
         selected: function(node) {
+            console.log(this.sel_node.label);
             this.sel_node = node;
+            console.log(this.sel_node.label);
+        },
+        logged: function() {
+            //this.disactivate();
+            this.selected(this.tree);
         }
-    
     }
 })
 
@@ -34,7 +47,7 @@ Vue.component('abp-node', {
     props: [ 'node', 'flag', 'sel_node'],
     data: function() {
         return {
-            isActive: false,
+            prev_sender: false,
             sender: false
         }
     },
@@ -42,16 +55,19 @@ Vue.component('abp-node', {
     delimiters: ['${', '}'],
     watch: {
         flag: function() {
-            if ( this.sender ) this.sender = false
-            else this.isActive = false;
+            if (this.sender) {
+                if (this.prev_sender) {
+                    this.sender = false;
+                    this.prev_sender = false;
+                }
+                else this.prev_sender =true;
+            }
         },
         sel_node: function() {
-            //console.log(this.sel_node.id);
-            //console.log(this.node.id);
             if (this.sel_node.id == this.node.id) {
                 this.sender = true;
                 eventBus.$emit('disactivate');
-                this.isActive = true;
+                //this.prev_sender = true;
             }
         }
     },
@@ -59,8 +75,8 @@ Vue.component('abp-node', {
         onClick: function() {
             eventBus.$emit('tree-event', this.node);
             this.sender = true;
-            eventBus.$emit('disactivate');
-            this.isActive = true; 
+            //eventBus.$emit('disactivate');
+            //this.prev_sender = true;
         }
     }
 })
@@ -108,6 +124,39 @@ Vue.component('abp-item', {
     }
 })
 
+Vue.component('abp-login', {
+    props: ['data'],
+    data: function() {
+        return {
+            username: username,
+            password: '',
+            route: { 'Регистрация': '/register', 'Войти': '/login'}
+        }
+    },
+    template: '#abp-login',
+    delimiters: ['${', '}'],
+    methods: {
+        onClick: async function(label) {
+            jsn = JSON.stringify({'username': this.username, 'password': this.password});
+            console.log(jsn);
+            const response = await fetch(this.route[label], {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8'
+                },
+                credentials: 'include',
+                body: jsn
+            });
+            const rsp = await response.json();
+            if ( rsp['error'] ) alert(rsp['error']);
+            else {
+                eventBus.$emit("logged",this.username);
+                eventBus.$emit("tree-event", tree);
+            }
+        }
+    }
+})
+
 Vue.component('abp-gallery', {
     props: ['data'],
     template: '#abp-gallery',
@@ -121,15 +170,15 @@ Vue.component('abp-card', {
     asyncComputed: {
         details: {
             async get() {
-                console.log("dsanfal");
                 jsn = JSON.stringify({ "id": this.data.id });
                 const response = await fetch('/details', {
                     method: 'post',
                     headers: {
                         'Content-Type': 'application/json;charset=utf-8'
                     },
+                    credentials: 'include',
                     body: jsn
-                })
+                });
                 const rsp = await response.json();
                 if (rsp) return ({ nick: rsp['nick'], birthday: rsp['birthday'], 
                                 breed: rsp['breed'], subbreed: rsp['subbreed'], mam: rsp['mam'], dad: rsp['dad']});
@@ -148,20 +197,67 @@ new Vue({
     },
     created: function() {
         eventBus.$on('tree-event',this.tree_handler);
+        eventBus.$on('login',this.login);
     },
     beforeDestroy: function() {
         eventBus.$off('tree-event');
+        eventBus.$off('login');
     },
     methods: {
         tree_handler: function(node) {
-            if (node.id <= 0) {
-                if (this.swtch == 'abp-card') this.swtch = 'abp-gallery';
-                this.data = node;
-            } 
-            else {
-                if (this.swtch == 'abp-gallery') this.swtch = 'abp-card';
-                this.data = node;
+            if (this.swtch == 'abp-login') 
+                if (node.id <= 0) this.swtch = 'abp-gallery';
+                else this.swtch = 'abp-card';
+            else 
+                if (node.id <= 0) { if (this.swtch == 'abp-card') this.swtch = 'abp-gallery'; }
+                else { if (this.swtch == 'abp-gallery') this.swtch = 'abp-card'; }
+            this.data = node;
+            eventBus.$emit('selected', node);
+        },
+        login: async function(label) {
+            if (label == 'Выйти') {
+                const response = await fetch('/logout', { credentials: 'include' });
+                const rsp = await response.text();
+                if (rsp == 'ok') {
+                    eventBus.$emit('unlogged');
+                    this.tree_handler(tree);
+                }
             }
+            else {
+                this.swtch = 'abp-login';
+                this.data = { label: label }
+            }
+        }
+    }
+})
+
+new Vue({
+    el: "#nav",
+    data: { 
+        items : [{label: 'Войти'},{label: 'Регистрация'}],
+        username : username 
+    },
+    delimiters: ['${', '}'],
+    created: function() {
+        eventBus.$on('logged',this.logged);
+        eventBus.$on('unlogged',this.unlogged);
+        if (username) this.items = [{ label: 'Выйти'}];
+    },
+    beforeDestroy: function() {
+        eventBus.$off('logged');
+        eventBus.$off('unlogged');
+    },
+    methods: {
+        onClick: function(label) {
+            eventBus.$emit('login', label);
+        },
+        logged: function(username) {
+            this.username = username;
+            this.items = [{ label: 'Выйти'}];
+    },
+        unlogged: function() {
+            this.username = ''; 
+            this.items = [{label: 'Войти'},{label: 'Регистрация'}];
         }
     }
 })

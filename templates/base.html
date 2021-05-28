@@ -6,16 +6,49 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <html lang="ru">
 <body>
+  <script>
+    var tree = JSON.parse({{ tree | tojson }});
+    {% if g.user %}
+      var username = {{ g.user['username'] }};
+    {% else %}
+      var username = '';
+    {% endif %}
+  </script>
 
   <header>{% block header %}<h1>Pet Shop</h1>{% endblock %}</header>
 
-  <nav>{% block nav %}{% endblock %}</nav>
-  <aside>{% block aside %}Aside Block{% endblock %}</aside>
+  <nav id="nav">
+    <ul>
+      <li><b>${ username }</b></li>
+      <li v-for="item in items" :key="item.label" @click.stop="onClick(item.label);"><span>${ item.label }</span></li>
+    </ul>
+    {% block nav %}{% endblock %}
+  </nav>
+
+  <aside>
+    <template id="abp-node">
+      <li :class = "[sender ? 'active-node' : 'non-active-node']" @click.stop="onClick();"><span>${ node.label }</span>
+          <ul v-if="node.children && node.children.length">
+              <abp-node :flag="flag" v-for="child in node.children" :key="child.id" :node="child" :sel_node="sel_node"></abp-node>
+          </ul>
+      </li>
+    </template>
+    <template id='abp-tree'>
+      <div>
+          <ul>
+              <abp-node :node="tree" :flag="flag" :sel_node="sel_node"></abp-node>
+          </ul>
+      </div>
+    </template>
+    <abp-tree id='tree' :tree='tree'></abp-tree>
+    {% block aside %}{% endblock %}
+  </aside>
   <article>
     {% block article %}{% endblock %}
   </article>
   <footer>
     {% block footer %}
+    <div></div>
     {% endblock %}
     <div class="copyright">
       <div>
@@ -23,7 +56,8 @@
         <p style="margin-top: -8px;"><a href="mailto:ap120368+web@gmail.com">ap120368+web@gmail.com</a></p>
       </div>
     </div>
-</footer>
- 
+  </footer>
+  <script src="https://unpkg.com/vue-async-computed"></script>
+  <script src="{{ url_for('static', filename='app_vue.js') }}"></script>
 </body>
 </html>

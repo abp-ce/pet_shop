@@ -1,26 +1,8 @@
 <!doctype html>
 {% extends 'base.html' %}
 {% block aside %}
-    <template id='abp-tree'>
-        <div>
-            <ul>
-                <abp-node :node="tree" :flag="flag" :sel_node="sel_node"></abp-node>
-            </ul>
-        </div>
-    </template>
-    <template id="abp-node">
-        <li :class = "[isActive ? 'active-node' : 'non-active-node']" @click.stop="onClick();"><span>${ node.label }</span>
-            <ul v-if="node.children && node.children.length">
-                <abp-node :flag="flag" v-for="child in node.children" :key="child.id" :node="child" :sel_node="sel_node"></abp-node>
-            </ul>
-        </li>
-    </template>
-    <abp-tree id='tree' :tree='tree'></abp-tree>
 {% endblock %}
 {% block article %}
-    <script>
-        var tree = JSON.parse({{ tree | tojson }})
-    </script>
     <template id='abp-slider'>
         <div style="position: relative; width: 80vh;">
             <transition-group name="fade" tag="div">
@@ -34,13 +16,20 @@
     </template>
     <template id='abp-gallery'>
         <div class="gallery">
-            <abp-item v-for="dt in data.children" :key="dt.label" :item="dt"></abp-item>
+            <abp-item v-for="dt in data.children" :key="dt.id" :item="dt"></abp-item>
         </div>
     </template>
     <template id="abp-card">
         <div class="card">
             <!--abp-slider :photos="photos"></abp-slider-->
-            <div>${ data.label }</div>
+            <div class="photos">
+                <div><img :src="data.photo"></div>
+                <div><img :src="data.photo"></div>
+                <div><img :src="data.photo"></div>
+                <div><img :src="data.photo"></div>
+                <div><img :src="data.photo"></div>
+                <div><img :src="data.photo"></div>
+            </div>
             <div class="desc">
                 <div>
                     Имя: <b>${ data.label }</b><br>
@@ -58,10 +47,22 @@
             </div>
         </div>
     </template>
+    <template id="abp-login">
+        <div class="login">
+            <h2>${ data.label }</h2>
+            <form method="post">
+                <label for="username">Пользователь</label>
+                <input v-model="username" name="username" id="username" required>
+                <label for="password">Пароль</label>
+                <input v-model="password" type="password" name="password" id="password" required>
+                <input type="button" @click="onClick(data.label)" :value="data.label">
+            </form>
+        </div>
+    </template>
     <template id="abp-item">
         <div @click="onClick()">
             <figure>
-                <img src="static/photo.jpg">
+                <img :src="item.photo">
                 <figcaption>${item.label}</figcaption>
             </figure>
         </div>
@@ -71,8 +72,6 @@
         <component :is="swtch" :data="data"></component>
     </div>
 
-    <script src="https://unpkg.com/vue-async-computed"></script>
-    <script src="{{ url_for('static', filename='app_vue.js') }}"></script>
 {% endblock %}
 {% block footer%}
 <div class="contacts">
