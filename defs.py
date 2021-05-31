@@ -4,7 +4,7 @@ from flask import g, session, make_response
 
 def get_tree():
     if 'tree' not in g:
-        photo = 'static/photo.jpg'
+        photo = 'static/photo.jpeg'
         folder = 'static/folder.png'
         tree = {'id': 0, 'label': 'Породы', 'photo': folder, 'children': []}
         db = get_db()
