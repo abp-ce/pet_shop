@@ -20,7 +20,7 @@
   <nav id="nav">
     <ul>
       <li><b>${ username }</b></li>
-      <li v-for="item in items" :key="item.label" @click.stop="onClick(item.label);"><span>${ item.label }</span></li>
+      <li v-for="item in items" :key="item.m_item" @click.stop="onClick(item.m_item);"><span>${ item.m_item }</span></li>
     </ul>
     {% block nav %}{% endblock %}
   </nav>
@@ -29,14 +29,14 @@
     <template id="abp-node">
       <li :class = "[sender ? 'active-node' : 'non-active-node']" @click.stop="onClick();"><span>${ node.label }</span>
           <ul v-if="node.children && node.children.length">
-              <abp-node :flag="flag" v-for="child in node.children" :key="child.id" :node="child" :sel_node="sel_node"></abp-node>
+              <abp-node v-for="child in node.children" :key="child.id" :node="child"></abp-node>
           </ul>
       </li>
     </template>
     <template id='abp-tree'>
       <div>
           <ul>
-              <abp-node :node="tree" :flag="flag" :sel_node="sel_node"></abp-node>
+              <abp-node :node="tree"></abp-node>
           </ul>
       </div>
     </template>
@@ -58,6 +58,7 @@
     </div>
   </footer>
   <script src="https://unpkg.com/vue-async-computed"></script>
+  <script src="https://unpkg.com/vuex"></script>
   <script src="{{ url_for('static', filename='app_vue.js') }}"></script>
 </body>
 </html>

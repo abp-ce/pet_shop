@@ -1,82 +1,42 @@
-const eventBus = new Vue();
+const store = new Vuex.Store({
+    state: {
+        username: username,
+        sel_node: tree,
+    },
+    mutations: {
+        set_username: (state, username) => state.username = username,
+        set_sel_node: (state, node) => state.sel_node = node,
+    }
+})
 
 Vue.component('abp-tree', {
-    data: function() {
-        return {
-            flag: false,
-            sel_node: {}
-        }
-    },
     props: ['tree'],
     template: '#abp-tree',
     delimiters: ['${', '}'],
-    created: function() {
-        eventBus.$on('disactivate',this.disactivate);
-        eventBus.$on('selected',this.selected);
-        eventBus.$on('logged',this.logged);
-        eventBus.$on('unlogged',this.logged);
-    },
-    beforeDestroy: function() {
-        eventBus.$off('disactivate');
-        eventBus.$off('selected');
-        eventBus.$off('logged');
-        eventBus.$off('unlogged');
-    },
     mounted: function() {
-        eventBus.$emit("tree-event",this.tree);
+        store.commit('set_sel_node', this.tree);
     },
-    methods: {
-        disactivate: function() {
-            if (this.flag == false) this.flag = true;
-            else this.flag = false;
-            console.log(this.flag);
-        },
-        selected: function(node) {
-            console.log(this.sel_node.label);
-            this.sel_node = node;
-            console.log(this.sel_node.label);
-        },
-        logged: function() {
-            //this.disactivate();
-            this.selected(this.tree);
+    computed: {
+        username: function() {
+            store.commit('set_sel_node', this.tree);
+            return store.state.username;
         }
     }
 })
 
 Vue.component('abp-node', {
-    props: [ 'node', 'flag', 'sel_node'],
-    data: function() {
-        return {
-            prev_sender: false,
-            sender: false
-        }
-    },
+    props: ['node'],
     template: '#abp-node',
     delimiters: ['${', '}'],
-    watch: {
-        flag: function() {
-            if (this.sender) {
-                if (this.prev_sender) {
-                    this.sender = false;
-                    this.prev_sender = false;
-                }
-                else this.prev_sender =true;
-            }
+    computed: {
+        sender: function() {
+            if (store.state.sel_node.id == this.node.id) return true;
+            else return false;
         },
-        sel_node: function() {
-            if (this.sel_node.id == this.node.id) {
-                this.sender = true;
-                eventBus.$emit('disactivate');
-                //this.prev_sender = true;
-            }
-        }
     },
     methods: {
         onClick: function() {
-            eventBus.$emit('tree-event', this.node);
-            this.sender = true;
-            //eventBus.$emit('disactivate');
-            //this.prev_sender = true;
+            store.commit('set_sel_node', this.node);
         }
     }
 })
@@ -118,8 +78,7 @@ Vue.component('abp-item', {
     delimiters: ['${', '}'],
     methods: {
         onClick: function() {
-            eventBus.$emit('tree-event', this.item);
-            eventBus.$emit('selected',this.item);
+            store.commit('set_sel_node', this.item);
         }
     }
 })
@@ -128,13 +87,22 @@ Vue.component('abp-login', {
     props: ['data'],
     data: function() {
         return {
-            username: username,
             password: '',
             route: { 'Регистрация': '/register', 'Войти': '/login'}
         }
     },
     template: '#abp-login',
     delimiters: ['${', '}'],
+    computed: {
+        username: {
+            get() {
+                return store.state.username;
+            },
+            set(username) {
+                store.commit('set_username', username);
+            }
+        }
+    },
     methods: {
         onClick: async function(label) {
             jsn = JSON.stringify({'username': this.username, 'password': this.password});
@@ -150,26 +118,39 @@ Vue.component('abp-login', {
             const rsp = await response.json();
             if ( rsp['error'] ) alert(rsp['error']);
             else {
-                eventBus.$emit("logged",this.username);
-                eventBus.$emit("tree-event", tree);
+                store.commit('set_username',this.username);
+                store.commit('set_sel_node', tree);
             }
         }
     }
 })
 
 Vue.component('abp-gallery', {
-    props: ['data'],
     template: '#abp-gallery',
-    delimiters: ['${', '}']
+    props: ['data'],
+    delimiters: ['${', '}'],
+    /*computed: {
+        data: function() {
+            console.log('abp-gallery');
+            return store.state.sel_node;
+        }
+    },*/
 })
 
 Vue.component('abp-card', {
-    props: ['data'],
     template: '#abp-card',
+    props: ['data'],
     delimiters: ['${', '}'],
+    /*computed: {
+        data: function() {
+            console.log('abp-card');
+            return store.state.sel_node;
+        }
+    },*/
     asyncComputed: {
         details: {
             async get() {
+                if (this.data.id <= 0) return {};
                 jsn = JSON.stringify({ "id": this.data.id });
                 const response = await fetch('/details', {
                     method: 'post',
@@ -191,73 +172,49 @@ Vue.component('abp-card', {
 
 new Vue({
     el: '#switch',
-    data: { 
-        swtch: 'abp-gallery',
-        data: {}
+    computed: {
+        data: function() {
+            //console.log('switch');
+            return store.state.sel_node;
+        }
     },
-    created: function() {
-        eventBus.$on('tree-event',this.tree_handler);
-        eventBus.$on('login',this.login);
-    },
-    beforeDestroy: function() {
-        eventBus.$off('tree-event');
-        eventBus.$off('login');
-    },
-    methods: {
-        tree_handler: function(node) {
-            if (this.swtch == 'abp-login') 
-                if (node.id <= 0) this.swtch = 'abp-gallery';
-                else this.swtch = 'abp-card';
-            else 
-                if (node.id <= 0) { if (this.swtch == 'abp-card') this.swtch = 'abp-gallery'; }
-                else { if (this.swtch == 'abp-gallery') this.swtch = 'abp-card'; }
-            this.data = node;
-            eventBus.$emit('selected', node);
-        },
-        login: async function(label) {
-            if (label == 'Выйти') {
-                const response = await fetch('/logout', { credentials: 'include' });
-                const rsp = await response.text();
-                if (rsp == 'ok') {
-                    eventBus.$emit('unlogged');
-                    this.tree_handler(tree);
+    asyncComputed: {
+        swtch: async function() {
+                if ('m_item' in this.data ) {
+                    if (this.data.m_item == "Выйти") {
+                        const response = await fetch('/logout', { credentials: 'include' });
+                        const rsp = await response.text();
+                        if (rsp == 'ok') {
+                            store.commit('set_username', '');
+                            store.commit('set_sel_node', tree);
+                        }
+                        return 'abp-gallery'
+                    }
+                    else return 'abp-login';
                 }
-            }
-            else {
-                this.swtch = 'abp-login';
-                this.data = { label: label }
-            }
+                //console.log(store.state.sel_node.id);
+                if (this.data.id <= 0) return 'abp-gallery';
+                else return 'abp-card';
         }
     }
 })
 
 new Vue({
     el: "#nav",
-    data: { 
-        items : [{label: 'Войти'},{label: 'Регистрация'}],
-        username : username 
-    },
     delimiters: ['${', '}'],
-    created: function() {
-        eventBus.$on('logged',this.logged);
-        eventBus.$on('unlogged',this.unlogged);
-        if (username) this.items = [{ label: 'Выйти'}];
-    },
-    beforeDestroy: function() {
-        eventBus.$off('logged');
-        eventBus.$off('unlogged');
+    computed: {
+        items: function() {
+            if (store.state.username == '')
+                return [{m_item: 'Войти'},{m_item: 'Регистрация'}]
+            else return [{ m_item: 'Выйти'}];
+        }, 
+        username: function() {
+            return store.state.username;
+        }
     },
     methods: {
-        onClick: function(label) {
-            eventBus.$emit('login', label);
-        },
-        logged: function(username) {
-            this.username = username;
-            this.items = [{ label: 'Выйти'}];
-    },
-        unlogged: function() {
-            this.username = ''; 
-            this.items = [{label: 'Войти'},{label: 'Регистрация'}];
+        onClick: function(m_item) {
+            store.commit('set_sel_node', { m_item: m_item });
         }
     }
 })
