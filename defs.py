@@ -2,46 +2,47 @@ from app.db import get_db
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask import g, session, make_response
 
-def get_tree():
+def get_tree(photo, folder, label):
     if 'tree' not in g:
-        photo = 'static/photo.jpeg'
-        folder = 'static/folder.png'
-        tree = {'id': 0, 'label': 'Породы', 'photo': folder, 'children': []}
+        #photo = 'static/photo.jpeg'
+        #folder = 'static/folder.png'
+        tree = {'id': 0, label: 'Породы', 'photo': folder, 'children': []}
         db = get_db()
         breeds = db.execute('SELECT * FROM breeds').fetchall()
         for breed in breeds:
-            brd = {'id': -(breed['id']*10 + 1), 'label': breed['breed'], 'photo': folder, 'children': []}
-            bb = {'id': -(breed['id']*10 + 2), 'label': 'Щенки на продажу', 'photo': folder, 'children': []}
+            brd = {'id': -(breed['id']*10 + 1), label: breed['breed'], 'photo': folder, 'children': []}
+            bb = {'id': -(breed['id']*10 + 2), label: 'Щенки на продажу', 'photo': folder, 'children': []}
             sqlstr = "SELECT id, dogname FROM dogs WHERE breed = ? AND mam != ''"
             babies = db.execute( sqlstr, (breed['id'],)).fetchall()
             for baby in babies:
-                bb['children'].append({'id': baby['id'], 'label': baby['dogname'], 'photo': photo, 'children': []})
+                bb['children'].append({'id': baby['id'], label: baby['dogname'], 'photo': photo, 'children': []})
             brd['children'].append(bb)
-            mm = {'id': -(breed['id']*10 + 3), 'label':'Мамы', 'photo': folder,'children':[]}
+            mm = {'id': -(breed['id']*10 + 3), label:'Мамы', 'photo': folder,'children':[]}
             sqlstr = "SELECT DISTINCT mam FROM dogs WHERE breed LIKE ? AND mam != ''" 
             mams = db.execute( sqlstr, (breed['id'],)).fetchall()
             for mam in mams:
                 sqlstr = "SELECT id, dogname FROM dogs WHERE id = ?"
                 ma = db.execute( sqlstr, (mam['mam'],)).fetchone()
-                mm['children'].append({'id':ma['id'], 'label':ma['dogname'], 'photo': photo, 'children':[]})
+                mm['children'].append({'id':ma['id'], label:ma['dogname'], 'photo': photo, 'children':[]})
             brd['children'].append(mm)
-            dd = {'id': -(breed['id']*10 + 4), 'label':'Папы', 'photo': folder,'children':[]}
+            dd = {'id': -(breed['id']*10 + 4), label:'Папы', 'photo': folder,'children':[]}
             sqlstr = "SELECT DISTINCT dad FROM dogs WHERE breed LIKE ? AND dad != ''" 
             dads = db.execute( sqlstr, (breed['id'],)).fetchall()
             for dad in dads:
                 sqlstr = "SELECT id, dogname FROM dogs WHERE id = ?"
                 da = db.execute( sqlstr, (dad['dad'],)).fetchone()
-                dd['children'].append({'id':da['id'], 'label':da['dogname'], 'photo': photo, 'children':[]})
+                dd['children'].append({'id':da['id'], label:da['dogname'], 'photo': photo, 'children':[]})
             brd['children'].append(dd)
             tree['children'].append(brd)
-
-        print(f"{tree['id']} {tree['label']} {tree['photo']}")
+        """
+        print(f"{tree['id']} {tree[label]} {tree['photo']}")
         for brd in tree['children']:
-            print(f"{brd['id']} {brd['label']} {brd['photo']}")
+            print(f"{brd['id']} {brd[label]} {brd['photo']}")
             for ttl in brd['children']:
-                print(f"{ttl['id']} {ttl['label']} {ttl['photo']}")
+                print(f"{ttl['id']} {ttl[label]} {ttl['photo']}")
                 for dogs in ttl['children']:
-                    print(f"{dogs['id']} {dogs['label']} {dogs['photo']}")
+                    print(f"{dogs['id']} {dogs[label]} {dogs['photo']}")
+        """
         g.tree = tree
     
     return g.tree

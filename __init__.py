@@ -1,11 +1,13 @@
 import os
 import json
 from flask import Flask, render_template, request
-from .db import get_db
+from flask_cors import CORS
+#from .db import get_db
 from .defs import get_tree, get_details, to_register, to_login, to_logout, to_load_logged_in_user
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app, supports_credentials=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'app.sqlite'),
@@ -29,8 +31,12 @@ def create_app(test_config=None):
 
     @app.route('/')
     def pet_shop():
-        jsn_tree = json.dumps(get_tree())
+        jsn_tree = json.dumps(get_tree('static/photo.jpeg','static/folder.png','label'))
         return render_template('main.html', tree=jsn_tree )
+    
+    @app.route('/tree')
+    def tree():
+        return json.dumps(get_tree('/photo.jpeg','/folder.png','name'))
     
     @app.route('/login', methods=('GET', 'POST'))
     def login():
