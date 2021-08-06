@@ -53,6 +53,7 @@ def get_details(id):
     jsn = {}
     jsn['nick'] = details['nick']
     jsn['birthday'] = details['birthday'].strftime("%d-%m-%Y")
+    jsn['gender'] = details['gender']
     jsn['breed'] = jsn['subbreed'] = jsn['mam'] = jsn['dad'] = ''
     if (details['breed']):
         breed = db.execute("SELECT breed FROM breeds WHERE id =?", (details['breed'],)).fetchone()
