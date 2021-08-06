@@ -61,9 +61,11 @@ def get_details(id):
         subbreed = db.execute("SELECT subbreed FROM subbreeds WHERE id =?", (details['subbreed'],)).fetchone()
         jsn['subbreed'] = subbreed['subbreed']
     if (details['mam']):
+        jsn['mamID'] = details['mam']
         mam = db.execute("SELECT dogname FROM dogs WHERE id =?", (details['mam'],)).fetchone()
         jsn['mam'] = mam['dogname']
     if (details['dad']):
+        jsn['dadID'] = details['dad']
         dad = db.execute("SELECT dogname FROM dogs WHERE id =?", (details['dad'],)).fetchone()
         jsn['dad'] = dad['dogname']
     return jsn
