@@ -3,7 +3,7 @@ import json
 from flask import Flask, render_template, request
 from flask_cors import CORS
 #from .db import get_db
-from .defs import get_tree, get_details, to_register, to_login, to_logout, to_load_logged_in_user
+from .defs import get_tree, get_details, get_children, to_register, to_login, to_logout, to_load_logged_in_user
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -28,6 +28,10 @@ def create_app(test_config=None):
         data = request.get_json()
         return json.dumps(get_details(data['id']))
 
+    @app.route('/children', methods=['POST'])
+    def children():
+        data = request.get_json()
+        return json.dumps(get_children(data['id']))
 
     @app.route('/')
     def pet_shop():

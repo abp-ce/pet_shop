@@ -71,6 +71,10 @@ def get_details(id):
         jsn['dad'] = dad['dogname']
     return jsn
 
+def get_children(id):
+    res = get_db().execute("SELECT id FROM dogs WHERE mam = ? or dad = ?", (id, id)).fetchall()
+    return [r['id'] for r in res]
+
 def to_register(username, password):
     db = get_db()
     error = None
